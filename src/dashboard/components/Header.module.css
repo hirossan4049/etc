@@ -1,0 +1,88 @@
+.header {
+  height: 48px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: 600;
+  font-size: var(--fs-5);
+}
+.logo {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.tab {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-6);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.tab.on {
+  background: var(--hover);
+  color: var(--text);
+}
+.spacer {
+  flex: 1;
+}
+.sync {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-6);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sync-ok);
+  flex: none;
+}
+.dotError {
+  background: var(--error);
+}
+.cardChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-6);
+  cursor: pointer;
+}
+.cardChip:hover {
+  background: var(--hover);
+}
+
+@media (max-width: 760px) {
+  .hideSmall {
+    display: none;
+  }
+}

@@ -1,0 +1,56 @@
+.wrap {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 420px;
+  padding: 10px 14px;
+  border-radius: var(--r-float);
+  font-size: var(--fs-6);
+  animation: in var(--d-panel) var(--ease);
+  z-index: 100;
+}
+.error {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-card);
+}
+.success {
+  background: #111316;
+  color: #ecedef;
+  box-shadow: var(--shadow-card);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+.msg {
+  flex: 1;
+}
+.action {
+  border: none;
+  background: transparent;
+  font-size: var(--fs-6);
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--accent);
+}
+.successAction {
+  color: #a6abb3;
+}
+
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

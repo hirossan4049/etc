@@ -1,0 +1,377 @@
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.titleCount {
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 400;
+  margin-left: 4px;
+}
+.search {
+  width: 240px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--hover);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  color: var(--text-2);
+}
+.search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+  color: var(--text);
+}
+.search input::placeholder {
+  color: var(--text-3);
+}
+.spacer {
+  flex: 1;
+}
+.sortLabel {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.tableWrap {
+  flex: 1;
+  overflow: auto;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 92px 54px minmax(220px, 2.2fr) minmax(140px, 1.3fr) 84px 64px 76px 84px 72px;
+  column-gap: 16px;
+  padding: 0 20px;
+  min-width: 980px;
+}
+.row {
+  display: contents;
+}
+.headRow > * {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 2;
+}
+.th {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--line-2);
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  text-align: left;
+}
+.th:hover {
+  color: var(--text);
+}
+.th.right {
+  justify-content: flex-end;
+  text-align: right;
+}
+.sortArrow {
+  color: var(--accent);
+}
+
+.grpRow {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: 32px;
+  height: 32px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  padding: 0 0;
+}
+.grpRow b {
+  font-weight: 600;
+}
+.grpCount {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.grpSpacer {
+  flex: 1;
+}
+.grpSum {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.tr {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 92px 54px minmax(220px, 2.2fr) minmax(140px, 1.3fr) 84px 64px 76px 84px 72px;
+  column-gap: 16px;
+  align-items: center;
+  height: 36px;
+  border-bottom: 1px solid var(--line);
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+.tr:hover {
+  background: var(--hover);
+}
+.tr.sel {
+  background: var(--sel);
+}
+.tr.sel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+}
+.cellEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cellRight {
+  text-align: right;
+}
+
+.emptyWrap {
+  grid-column: 1 / -1;
+}
+
+.panel {
+  width: 380px;
+  flex: none;
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+  padding: var(--sp-4);
+  animation: slideIn var(--d-panel) var(--ease);
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.panelTop {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.panelCode {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.panelTitleBlock {
+  margin-top: var(--sp-3);
+}
+.panelMeta {
+  font-size: 12px;
+  color: var(--text-2);
+}
+.panelH2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 2px 0;
+}
+.panelRoad {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.miniMap {
+  margin-top: var(--sp-3);
+  height: 150px;
+  border-radius: 8px;
+  background: var(--land);
+  position: relative;
+  overflow: hidden;
+}
+.miniMapLink {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: var(--sp-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.statCell {
+  padding: var(--sp-2) var(--sp-2);
+  border-left: 1px solid var(--line);
+}
+.statCell:first-child {
+  border-left: none;
+  padding-left: 0;
+}
+.statLabel {
+  font-size: 11px;
+  color: var(--text-3);
+}
+.statValue {
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin: var(--sp-4) 0 var(--sp-2);
+}
+
+.stops {
+  display: flex;
+  flex-direction: column;
+}
+.stop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  position: relative;
+  padding-bottom: var(--sp-3);
+}
+.stop:last-child {
+  padding-bottom: 0;
+}
+.stopLine {
+  position: absolute;
+  left: 4px;
+  top: 10px;
+  bottom: -2px;
+  width: 1.5px;
+  background: var(--line-2);
+}
+.stop:last-child .stopLine {
+  display: none;
+}
+.stopDotStart {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  flex: none;
+  margin-top: 2px;
+}
+.stopDotEnd {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  flex: none;
+  margin-top: 2px;
+}
+.stopBody {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 13px;
+}
+.stopTime {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+}
+.breakdownDivider {
+  border-top: 1px solid var(--line);
+  margin: 4px 0;
+}
+.breakdownTotal {
+  font-weight: 600;
+}
+.breakdownWarn {
+  color: var(--warn);
+}
+.breakdownMuted {
+  color: var(--text-3);
+}
+
+.footerBar {
+  flex: none;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+@media (max-width: 900px) {
+  .body {
+    flex-direction: column;
+  }
+  .panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+  .search {
+    width: 100%;
+  }
+}

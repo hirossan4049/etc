@@ -1,0 +1,135 @@
+.ibtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--d-hover) var(--ease), color var(--d-hover) var(--ease);
+  flex: none;
+}
+.ibtn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.lbtn {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-6);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background var(--d-hover) var(--ease);
+  white-space: nowrap;
+}
+.lbtn:hover {
+  background: var(--hover);
+}
+.lbtnPrimary {
+  color: var(--accent);
+}
+.lbtnFilled {
+  background: var(--text);
+  color: var(--surface);
+  padding: 6px 12px;
+  height: auto;
+  border-radius: 7px;
+}
+.lbtnFilled:hover {
+  background: var(--text);
+  opacity: 0.9;
+}
+
+.seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--hover);
+  gap: 2px;
+}
+.segBtn {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-6);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--d-hover) var(--ease), box-shadow var(--d-hover) var(--ease);
+}
+.segBtn.on {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.chip {
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-6);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.chipDashed {
+  border-style: dashed;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--r-tag);
+  font-size: var(--fs-7);
+  font-weight: 500;
+  color: var(--warn);
+  background: var(--warn-soft);
+  white-space: nowrap;
+}
+
+.kbd {
+  font-size: var(--fs-7);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-tag);
+  padding: 0 4px;
+  color: var(--text-3);
+}
+
+.divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line-2);
+  flex: none;
+}
+
+.float {
+  background: var(--float);
+  backdrop-filter: blur(12px);
+  border-radius: var(--r-float);
+  box-shadow: var(--shadow-float);
+}

@@ -1,0 +1,39 @@
+.card {
+  border-radius: var(--r-float);
+  box-shadow: var(--shadow-flat);
+  padding: 14px 16px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 44px;
+  gap: var(--sp-3);
+  align-items: center;
+}
+.bar {
+  height: 10px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--hover) 0%, rgba(17, 19, 22, 0.09) 40%, var(--hover) 80%);
+  background-size: 300% 100%;
+  animation: sweep 1.4s linear infinite;
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--hover) 0%, rgba(17, 19, 22, 0.09) 40%, var(--hover) 80%);
+  background-size: 300% 100%;
+  animation: sweep 1.4s linear infinite;
+}
+
+@keyframes sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
