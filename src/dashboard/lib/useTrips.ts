@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { SyncState, Trip } from '../../shared/types';
 import { PORT_NAME, type BackgroundToDashboard } from '../../shared/messages';
 import { generateMockTrips } from '../../shared/mock-data';
+import { enrichTrip } from '../../shared/enrich-trip';
+import { parseMeisaiCsvFile } from './importCsv';
 
 const hasChrome = typeof chrome !== 'undefined' && !!chrome.runtime?.id;
 
@@ -10,9 +12,10 @@ export interface TripsState {
   syncState: SyncState;
   retrySync: () => void;
   focusEtcTab: () => void;
+  importCsv: (file: File) => Promise<number>;
 }
 
-const idleSyncState: SyncState = { phase: 'done', months: [], lastSyncedAt: new Date().toISOString() };
+const idleSyncState: SyncState = { phase: 'done', lastSyncedAt: new Date().toISOString() };
 
 export function useTrips(): TripsState {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -21,14 +24,14 @@ export function useTrips(): TripsState {
 
   useEffect(() => {
     if (!hasChrome) {
-      setTrips(generateMockTrips());
+      setTrips(generateMockTrips().map(enrichTrip));
       return;
     }
 
     let cancelled = false;
     void import('../../background/store').then(({ getAllTrips }) => {
       void getAllTrips().then((initial) => {
-        if (!cancelled) setTrips(initial);
+        if (!cancelled) setTrips(initial.map(enrichTrip));
       });
     });
 
@@ -39,7 +42,7 @@ export function useTrips(): TripsState {
       if (message.type === 'TRIPS_DELTA') {
         setTrips((prev) => {
           const byId = new Map(prev.map((t) => [t.id, t]));
-          for (const t of message.trips) byId.set(t.id, t);
+          for (const t of message.trips) byId.set(t.id, enrichTrip(t));
           return Array.from(byId.values());
         });
       }
@@ -52,10 +55,26 @@ export function useTrips(): TripsState {
     };
   }, []);
 
+  const importCsv = async (file: File): Promise<number> => {
+    const imported = await parseMeisaiCsvFile(file);
+    if (hasChrome) {
+      await chrome.runtime.sendMessage({ type: 'SYNC_CSV_FETCHED', trips: imported });
+    } else {
+      setTrips((prev) => {
+        const byId = new Map(prev.map((t) => [t.id, t]));
+        for (const t of imported) byId.set(t.id, enrichTrip(t));
+        return Array.from(byId.values());
+      });
+      setSyncState({ phase: 'done', lastSyncedAt: new Date().toISOString() });
+    }
+    return imported.length;
+  };
+
   return {
     trips,
     syncState,
     retrySync: () => portRef.current?.postMessage({ type: 'RETRY_SYNC' }),
     focusEtcTab: () => portRef.current?.postMessage({ type: 'FOCUS_ETC_TAB' }),
+    importCsv,
   };
 }

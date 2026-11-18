@@ -1,80 +1,117 @@
-import { PORT_NAME, type ContentToBackground, type DashboardToBackground } from '../shared/messages';
-import { loadSyncState, saveSyncState, nextPendingMonth } from './sync-controller';
+import { PORT_NAME, type DashboardToBackground, type OneOffMessage, type SyncStepResponse } from '../shared/messages';
+import { decodeShiftJis, hashId, meisaiRowToTrip, parseCsvRows, tripDedupeKey } from '../shared/parse-csv';
+import type { Trip } from '../shared/types';
+import { loadSyncState, saveSyncState } from './sync-controller';
 import { upsertTrips } from './store';
+
+/**
+ * ページ（content script）からの fetch は、レスポンスが Content-Disposition: attachment
+ * だとChromeのダウンロードマネージャに横取りされ "Failed to fetch" になる（実機で確認）。
+ * service worker（このファイル）からのfetchなら横取りされず中身を読める。
+ */
+async function fetchCsvAsTrips(url: string): Promise<Trip[]> {
+  const response = await fetch(url, { credentials: 'include' });
+  const buffer = await response.arrayBuffer();
+  const text = decodeShiftJis(buffer);
+  const rows = parseCsvRows(text);
+
+  const trips: Trip[] = [];
+  for (const row of rows) {
+    const fields = meisaiRowToTrip(row);
+    if (!fields) continue;
+    const id = await hashId(tripDedupeKey(fields));
+    trips.push({ id, ...fields });
+  }
+  return trips;
+}
 
 const dashboardPorts = new Set<chrome.runtime.Port>();
 let activeEtcTabId: number | undefined;
 
-chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message?.type === 'OPEN_DASHBOARD' && sender.tab?.id !== undefined) {
-    activeEtcTabId = sender.tab.id;
-    void chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
-    void loadSyncState().then((state) => {
-      state.phase = 'running';
-      void saveSyncState(state);
-      broadcastState(state);
-    });
-  }
+chrome.runtime.onMessage.addListener((message: OneOffMessage, sender, sendResponse) => {
+  void handleOneOffMessage(message, sender).then(sendResponse);
+  return true; // sendResponse は非同期で呼ぶ
 });
 
-chrome.runtime.onConnect.addListener((port) => {
-  if (port.name !== PORT_NAME) return;
-
-  const isDashboard = port.sender?.url?.includes('dashboard.html');
-  if (isDashboard) {
-    dashboardPorts.add(port);
-    port.onDisconnect.addListener(() => dashboardPorts.delete(port));
-    void loadSyncState().then((state) => port.postMessage({ type: 'SYNC_STATE', state }));
-  }
-
-  port.onMessage.addListener((message: ContentToBackground | DashboardToBackground) => {
-    void handleMessage(message, port);
-  });
-});
-
-async function handleMessage(
-  message: ContentToBackground | DashboardToBackground,
-  port: chrome.runtime.Port,
-): Promise<void> {
+async function handleOneOffMessage(
+  message: OneOffMessage,
+  sender: chrome.runtime.MessageSender,
+): Promise<SyncStepResponse | { ok: boolean; error?: string } | void> {
   switch (message.type) {
-    case 'START_SYNC': {
-      activeEtcTabId = message.tabId;
+    case 'OPEN_DASHBOARD': {
+      if (sender.tab?.id !== undefined) activeEtcTabId = sender.tab.id;
+      void chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
       const state = await loadSyncState();
       state.phase = 'running';
+      state.step = 'opening-search-form';
+      state.errorMessage = undefined;
       await saveSyncState(state);
       broadcastState(state);
-      const month = nextPendingMonth(state);
-      if (month) port.postMessage({ type: 'FETCH_MONTH', month });
-      break;
+      return;
     }
-    case 'MONTH_RESULT': {
+    case 'SYNC_REQUEST_STEP': {
+      const state = await loadSyncState();
+      if (state.phase === 'running' && state.step && state.step !== 'done') {
+        return { phase: 'running', step: state.step };
+      }
+      return { phase: 'idle' };
+    }
+    case 'SYNC_ADVANCE': {
+      const state = await loadSyncState();
+      state.step = message.step;
+      await saveSyncState(state);
+      return;
+    }
+    case 'SYNC_STEP_BLOCKED': {
+      const state = await loadSyncState();
+      state.phase = 'error';
+      state.errorMessage = '利用明細ページの操作中に想定外の画面になりました。もう一度お試しください。';
+      await saveSyncState(state);
+      broadcastState(state);
+      return;
+    }
+    case 'SYNC_CSV_FETCHED': {
       await upsertTrips(message.trips);
       const state = await loadSyncState();
-      const entry = state.months.find((m) => m.month === message.month);
-      if (entry) entry.status = 'done';
-      const next = nextPendingMonth(state);
-      if (!next) {
-        state.phase = 'done';
-        state.lastSyncedAt = new Date().toISOString();
-      }
+      state.phase = 'done';
+      state.step = 'done';
+      state.lastSyncedAt = new Date().toISOString();
+      state.errorMessage = undefined;
       await saveSyncState(state);
       broadcastState(state);
       broadcastDelta(message.trips);
-      if (next) port.postMessage({ type: 'FETCH_MONTH', month: next });
-      break;
+      return;
     }
-    case 'MONTH_ERROR': {
-      const state = await loadSyncState();
-      const entry = state.months.find((m) => m.month === message.month);
-      if (entry) {
-        entry.status = 'error';
-        entry.error = message.error;
+    case 'SYNC_FETCH_CSV_URL': {
+      try {
+        const trips = await fetchCsvAsTrips(message.url);
+        await upsertTrips(trips);
+        const state = await loadSyncState();
+        state.phase = 'done';
+        state.step = 'done';
+        state.lastSyncedAt = new Date().toISOString();
+        state.errorMessage = undefined;
+        await saveSyncState(state);
+        broadcastState(state);
+        broadcastDelta(trips);
+        return { ok: true };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const state = await loadSyncState();
+        state.phase = 'error';
+        state.errorMessage = message;
+        await saveSyncState(state);
+        broadcastState(state);
+        return { ok: false, error: message };
       }
+    }
+    case 'SYNC_ERROR': {
+      const state = await loadSyncState();
       state.phase = 'error';
-      state.errorMessage = message.error;
+      state.errorMessage = message.message;
       await saveSyncState(state);
       broadcastState(state);
-      break;
+      return;
     }
     case 'SESSION_EXPIRED': {
       const state = await loadSyncState();
@@ -82,17 +119,37 @@ async function handleMessage(
       state.errorMessage = 'ETC照会に再ログインしてください';
       await saveSyncState(state);
       broadcastState(state);
-      break;
+      return;
     }
+  }
+}
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== PORT_NAME) return;
+
+  dashboardPorts.add(port);
+  port.onDisconnect.addListener(() => dashboardPorts.delete(port));
+  void loadSyncState().then((state) => port.postMessage({ type: 'SYNC_STATE', state }));
+
+  port.onMessage.addListener((message: DashboardToBackground) => {
+    void handleDashboardMessage(message, port);
+  });
+});
+
+async function handleDashboardMessage(message: DashboardToBackground, port: chrome.runtime.Port): Promise<void> {
+  switch (message.type) {
     case 'REQUEST_SYNC_STATE': {
       const state = await loadSyncState();
       port.postMessage({ type: 'SYNC_STATE', state });
       break;
     }
     case 'RETRY_SYNC': {
-      if (activeEtcTabId !== undefined) {
-        port.postMessage({ type: 'FETCH_MONTH', month: nextPendingMonth(await loadSyncState()) });
-      }
+      const state = await loadSyncState();
+      state.phase = 'running';
+      state.step = 'opening-search-form';
+      state.errorMessage = undefined;
+      await saveSyncState(state);
+      broadcastState(state);
       break;
     }
     case 'FOCUS_ETC_TAB': {

@@ -9,14 +9,14 @@
     "128": "public/icon128.png"
   },
   "permissions": ["storage", "tabs"],
-  "host_permissions": ["https://www.etc-meisai.jp/*"],
+  "host_permissions": ["https://www.etc-meisai.jp/*", "https://www2.etc-meisai.jp/*"],
   "background": {
     "service_worker": "src/background/index.ts",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://www.etc-meisai.jp/*"],
+      "matches": ["https://www.etc-meisai.jp/*", "https://www2.etc-meisai.jp/*"],
       "js": ["src/content/main.tsx"],
       "run_at": "document_idle"
     }

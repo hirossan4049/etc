@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Trip } from '../../shared/types';
 import { aggregateRoutes, groupByDate } from '../lib/aggregate';
 import { useDashboardContext } from '../lib/context';
@@ -50,6 +50,7 @@ export function Explore() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [query, setQuery] = useState('');
   const [selectedTripId, setSelectedTripId] = useState<string | undefined>();
+  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
 
   const periodTrips = useMemo(() => trips.filter((t) => withinPeriod(t, period)), [trips, period]);
   const filteredTrips = useMemo(() => {
@@ -79,6 +80,7 @@ export function Explore() {
         routes={routes}
         mode={mode}
         selectedKey={selectedCorridorKey}
+        mapRef={mapInstanceRef}
         onSelect={(key) => {
           const route = routes.find((r) => r.key === key);
           const latest = route ? [...route.trips].sort((a, b) => b.exitAt.localeCompare(a.exitAt))[0] : undefined;
@@ -93,10 +95,10 @@ export function Explore() {
       </div>
 
       <div className={`${s.zoomGroup} ${p.float}`}>
-        <IconButton label="拡大">
+        <IconButton label="拡大" onClick={() => mapInstanceRef.current?.zoomIn()}>
           <ExpandIcon />
         </IconButton>
-        <IconButton label="縮小">
+        <IconButton label="縮小" onClick={() => mapInstanceRef.current?.zoomOut()}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 8h10" strokeLinecap="round" />
           </svg>

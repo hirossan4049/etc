@@ -24,21 +24,20 @@ export interface Trip {
   status?: 'confirmed' | 'pending';
 }
 
-export type MonthKey = string; // "YYYY-MM"
-
-export type MonthSyncStatus = 'pending' | 'done' | 'error';
-
-export interface MonthSyncState {
-  month: MonthKey;
-  status: MonthSyncStatus;
-  error?: string;
-}
+export type MonthKey = string; // "YYYY-MM"（集計用。同期ジョブの単位ではない）
 
 export type SyncPhase = 'idle' | 'running' | 'paused' | 'error' | 'done';
 
+/**
+ * 検索フォームに過去15ヶ月を明示指定→全頁選択→明細CSV、の3ステップで
+ * 保有する全履歴を1回で取得できることが確認できた（docs/site-notes.md）。
+ * 月ごとに繰り返す設計ではなく、この3ステップの進捗を表す。
+ */
+export type SyncStep = 'idle' | 'opening-search-form' | 'selecting-all-pages' | 'fetching-csv' | 'done';
+
 export interface SyncState {
   phase: SyncPhase;
-  months: MonthSyncState[];
+  step?: SyncStep;
   lastSyncedAt?: string;
   errorMessage?: string;
 }

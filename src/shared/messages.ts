@@ -1,16 +1,19 @@
-import type { MonthKey, SyncState, Trip } from './types';
+import type { SyncState, SyncStep, Trip } from './types';
 
 export const PORT_NAME = 'etc-dashboard-sync';
 
-export type ContentToBackground =
-  | { type: 'START_SYNC'; tabId: number }
-  | { type: 'MONTH_RESULT'; month: MonthKey; trips: Trip[] }
-  | { type: 'MONTH_ERROR'; month: MonthKey; error: string }
+/** chrome.runtime.sendMessage の一回限りのメッセージ（content ⇄ background）。 */
+export type OneOffMessage =
+  | { type: 'OPEN_DASHBOARD' }
+  | { type: 'SYNC_REQUEST_STEP' }
+  | { type: 'SYNC_ADVANCE'; step: SyncStep }
+  | { type: 'SYNC_STEP_BLOCKED' }
+  | { type: 'SYNC_CSV_FETCHED'; trips: Trip[] }
+  | { type: 'SYNC_FETCH_CSV_URL'; url: string }
+  | { type: 'SYNC_ERROR'; message: string }
   | { type: 'SESSION_EXPIRED' };
 
-export type BackgroundToContent =
-  | { type: 'FETCH_MONTH'; month: MonthKey }
-  | { type: 'STOP' };
+export type SyncStepResponse = { phase: 'running'; step: SyncStep } | { phase: 'idle' };
 
 export type BackgroundToDashboard =
   | { type: 'SYNC_STATE'; state: SyncState }

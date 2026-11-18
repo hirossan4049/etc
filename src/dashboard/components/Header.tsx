@@ -1,13 +1,15 @@
+import { useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import type { SyncState } from '../../shared/types';
-import { CardIcon, ChevronDownIcon, ThemeIcon } from './Icon';
-import { IconButton } from './Primitives';
+import { CardIcon, ChevronDownIcon, ExportIcon, ThemeIcon } from './Icon';
+import { IconButton, LabelButton } from './Primitives';
 import s from './Header.module.css';
 
 interface HeaderProps {
   syncState: SyncState;
   cardLast4: string;
   onToggleTheme: () => void;
+  onImportCsv: (file: File) => void;
 }
 
 function formatSyncedAt(iso: string): string {
@@ -17,8 +19,9 @@ function formatSyncedAt(iso: string): string {
   ).padStart(2, '0')} 同期`;
 }
 
-export function Header({ syncState, cardLast4, onToggleTheme }: HeaderProps) {
+export function Header({ syncState, cardLast4, onToggleTheme, onImportCsv }: HeaderProps) {
   const isError = syncState.phase === 'error';
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <header className={s.header}>
@@ -54,6 +57,21 @@ export function Header({ syncState, cardLast4, onToggleTheme }: HeaderProps) {
         <span className={`${s.dot} ${isError ? s.dotError : ''}`} />
         <span>{syncState.lastSyncedAt ? formatSyncedAt(syncState.lastSyncedAt) : '同期待ち'}</span>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onImportCsv(file);
+          e.target.value = '';
+        }}
+      />
+      <LabelButton onClick={() => fileInputRef.current?.click()}>
+        <ExportIcon /> CSVを読み込む
+      </LabelButton>
 
       <button type="button" className={`${s.cardChip} ${s.hideSmall}`}>
         <CardIcon />
